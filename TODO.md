@@ -1,33 +1,11 @@
-# TODO: Change Product ID to Alphanumeric Code
+# TODO: Update E-commerce App
 
-## Steps to Complete
-
-1. **Update Prisma Schema**
-   - Change `id` in `Product` model from `Int` to `String`
-   - Remove `@default(autoincrement())`
-   - Ensure `@id` is present
-
-2. **Generate Prisma Client**
-   - Run `npx prisma generate` to update the client
-
-3. **Update API Routes**
-   - Modify `app/api/products/route.ts` to generate alphanumeric ID on POST
-   - Modify `app/api/products/[id]/route.ts` to handle string ID
-
-4. **Update Frontend Pages**
-   - Update `app/shop/[id]/page.tsx` to handle string ID in params
-   - Update `app/shop/page.tsx` if needed (likely no changes)
-   - Update `app/admin/add-product/page.tsx` if needed (likely no changes)
-
-5. **Run Database Migration**
-   - Run `npx prisma migrate dev` to apply schema changes
-
-6. **Test the Changes**
-   - Verify product creation with new ID format
-   - Verify product fetching by ID
-   - Check shop pages display correctly
-
-## Notes
-- Existing products may need ID conversion if data exists
-- Ensure alphanumeric codes are unique
-- Use a utility function for ID generation (e.g., random alphanumeric string)
+- [x] 1. Update prisma/schema.prisma: Add Category model (id, name, products relation), add categoryId and category relation to Product, remove href, details, highlights, breadcrumbs fields from Product, remove Breadcrumb model entirely.
+- [x] 2. Run `prisma migrate dev` to apply schema changes.
+- [x] 3. Update app/shop/[id]/page.tsx: Remove rendering of details, highlights, breadcrumbs; add JSON-LD script tag for product schema (using name, price, description, category); generate breadcrumbs from category (e.g., ['Home', category.name, product.name]).
+- [x] 4. Update app/seller-dashboard/add-product/page.tsx: Remove href, details, highlights, breadcrumbs fields; add category Select dropdown (fetch categories via API), with 'Create New Category' button opening a Dialog for name input; update variants form to allow multiple images (dynamic array of src and alt inputs).
+- [x] 5. Update app/seller-dashboard/edit-product/[id]/page.tsx: Same changes as add-product.
+- [x] 6. Update app/api/products/route.ts: Remove handling of href, details, highlights, breadcrumbs; add categoryId validation/creation; update variants to create multiple Image records (loop over imageUrls array).
+- [x] 7. Update app/api/products/[id]/route.ts: Same updates for GET (remove fields), PUT (remove fields, add category), DELETE unchanged.
+- [x] 8. Update app/seller-dashboard/products/page.tsx: Add category column to the table (fetch and display category.name).
+- [x] 9. Test: Run the app, add/edit products with new fields, view individual page, check listing.

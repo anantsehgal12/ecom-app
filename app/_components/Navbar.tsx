@@ -14,11 +14,13 @@ import Image from "next/image";
 import {
   Building,
   ClipboardList,
-  List,
   ShoppingBag,
   ShoppingCartIcon,
+  UserCog,
 } from "lucide-react";
 import React from "react";
+import {isAdmin} from "@/app/extras/isAdmis";
+
 
 function Navbar() {
   const user = useUser();
@@ -51,6 +53,14 @@ function Navbar() {
                   About Us
                 </Link>
               </li>
+              {isAdmin(User) && (
+              <li className="hover:underline">
+                <Link href="/seller-dashboard" className="inline-flex items-center gap-2">
+                  <UserCog />
+                  Seller Dashboard
+                </Link>
+              </li>
+              )}
             </ul>
           </div>
           <div className="flex gap-4">

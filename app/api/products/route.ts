@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const products = await prisma.product.findMany({
       include: {
-        breadcrumbs: true,
+        category: true,
         variants: {
           include: {
             images: true,
@@ -25,7 +25,21 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, price, href, description, details, highlights, breadcrumbs, variants } = body;
+    const { name, price, description, categoryId, variants } = body;
+
+    // Validate categoryId
+    if (!categoryId) {
+      return NextResponse.json({ error: 'Category ID is required' }, { status: 400 });
+    }
+
+    // Check if category exists, if not, return error
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    });
+
+    if (!category) {
+      return NextResponse.json({ error: 'Category not found' }, { status: 400 });
+    }
 
     // Generate alphanumeric ID
     const id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -35,27 +49,22 @@ export async function POST(request: NextRequest) {
         id,
         name,
         price,
-        href,
         description,
-        details,
-        highlights,
-        breadcrumbs: {
-          create: breadcrumbs.map((b: any) => ({
-            name: b.name,
-            href: b.href,
-          })),
-        },
+        categoryId,
         variants: {
           create: variants.map((variant: any) => ({
             name: variant.name,
             images: {
-              create: variant.images,
+              create: variant.images.map((image: any) => ({
+                src: image.src,
+                alt: image.alt,
+              })),
             },
           })),
         },
       },
       include: {
-        breadcrumbs: true,
+        category: true,
         variants: {
           include: {
             images: true,

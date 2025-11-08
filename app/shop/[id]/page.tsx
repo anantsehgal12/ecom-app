@@ -27,11 +27,8 @@ interface Product {
   id: string
   name: string
   price: string
-  href: string
   description: string
-  details: string
-  highlights: string[]
-  breadcrumbs: { id: number; name: string; href: string }[]
+  category: { id: string; name: string }
   variants: {
     id: number
     name: string | null
@@ -66,35 +63,71 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
   // Flatten images from variants for display (guard against undefined)
   const images = (product.variants ?? []).flatMap((variant) => variant.images ?? [])
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "description": product.description,
+    "offers": {
+      "@type": "Offer",
+      "price": product.price.replace(/[^\d.]/g, ''), // Extract numeric price
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "category": product.category.name,
+    "image": images.length > 0 ? images.map(img => img.src) : []
+  }
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd),
+        }}
+      />
       <Navbar />
       <div className="pt-6">
         <nav aria-label="Breadcrumb">
           <ol role="list" className="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-            {product.breadcrumbs.map((breadcrumb) => (
-              <li key={breadcrumb.id}>
-                <div className="flex items-center">
-                  <a href={breadcrumb.href} className="mr-2 text-sm font-medium text-white">
-                    {breadcrumb.name}
-                  </a>
-                  <svg
-                    fill="currentColor"
-                    width={16}
-                    height={20}
-                    viewBox="0 0 16 20"
-                    aria-hidden="true"
-                    className="h-5 w-4 text-gray-300"
-                  >
-                    <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-                  </svg>
-                </div>
-              </li>
-            ))}
+            <li>
+              <div className="flex items-center">
+                <a href="/" className="mr-2 text-sm font-medium text-white">
+                  Home
+                </a>
+                <svg
+                  fill="currentColor"
+                  width={16}
+                  height={20}
+                  viewBox="0 0 16 20"
+                  aria-hidden="true"
+                  className="h-5 w-4 text-gray-300"
+                >
+                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                </svg>
+              </div>
+            </li>
+            <li>
+              <div className="flex items-center">
+                <a href={`/shop?category=${product.category.id}`} className="mr-2 text-sm font-medium text-white">
+                  {product.category.name}
+                </a>
+                <svg
+                  fill="currentColor"
+                  width={16}
+                  height={20}
+                  viewBox="0 0 16 20"
+                  aria-hidden="true"
+                  className="h-5 w-4 text-gray-300"
+                >
+                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                </svg>
+              </div>
+            </li>
             <li className="text-sm">
-              <a href={product.href} aria-current="page" className="font-medium text-white hover:text-gray-100">
+              <span aria-current="page" className="font-medium text-white">
                 {product.name}
-              </a>
+              </span>
             </li>
           </ol>
         </nav>
@@ -129,25 +162,13 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
           </div>
 
           {/* Right: Details + fixed add to cart (col-span 5) */}
-          <div className="lg:col-span-5 lg:top-24 lg:right-8 lg:w-[28rem] lg:max-h-[90vh] lg:overflow-auto">
+          <div className="lg:top-24 lg:w-[42rem] lg:right-8 lg:max-h-[100vh] lg:overflow-auto">
             {/* Keep column space; whole right column fixed on large screens */}
             <div>
                 <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{product.name}</h1>
 
-                <p className="mt-4 text-3xl tracking-tight text-gray-200">{product.price}</p>
+                <p className="mt-4 text-3xl tracking-tight text-gray-200">₹ {product.price}</p>
 
-                <div className="mt-6 flex items-center">
-                  <div className="flex items-center">
-                    {[0, 1, 2, 3, 4].map((rating) => (
-                      <StarIcon
-                        key={rating}
-                        aria-hidden="true"
-                        className={classNames(reviews.average > rating ? 'text-gray-100' : 'text-gray-800', 'h-5 w-5 shrink-0')}
-                      />
-                    ))}
-                  </div>
-                  <p className="sr-only">{reviews.average} out of 5 stars</p>
-                </div>
 
                 <div className="mt-6">
                   <p className="text-base text-gray-200">{product.description}</p>
@@ -194,19 +215,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
                   </button>
                 </form>
 
-                <div className="mt-8">
-                  <h3 className="text-sm font-medium text-gray-100">Highlights</h3>
-                  <ul role="list" className="mt-4 list-disc space-y-2 pl-4 text-sm">
-                    {product.highlights.map((highlight, index) => (
-                      <li key={index} className="text-gray-300">{highlight}</li>
-                    ))}
-                  </ul>
-                </div>
 
-                <div className="mt-6">
-                  <h2 className="text-sm font-medium text-gray-100">Details</h2>
-                  <p className="mt-2 text-sm text-gray-300">{product.details}</p>
-                </div>
               </div>
             </div>
           </div>

@@ -18,20 +18,16 @@ model Product {
   id          String       @id
   name        String
   price       String
-  href        String
   description String
-  details     String
-  highlights  Json
-  breadcrumbs Breadcrumb[]
+  categoryId  String
+  category    Category     @relation(fields: [categoryId], references: [id])
   variants    Variant[]
 }
 
-model Breadcrumb {
-  id        Int     @id @default(autoincrement())
-  name      String
-  href      String
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
 }
 
 model Variant {
